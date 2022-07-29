@@ -25,10 +25,14 @@ module.exports = {
     const pluginService = getService( 'preview-button' );
     const { contentTypes } = await pluginService.getConfig();
     const supportedType = contentTypes.find( type => type.uid === uid );
+    console.log(supportedType)
 
+    const { prepareFunc } = supportedType;
     // Collection types will find by the ID and single types do not.
     const findParams = id ? { where: { id } } : {};
-    const entity = await strapi.query( uid ).findOne( findParams );
+    const foundEntity = await strapi.query( uid ).findOne( findParams );
+    // Prepare entity
+    const entity = typeof prepareFunc === "function" ? await prepareFunc(foundEntity) : foundEntity;
 
     // Raise warning if plugin is active but not properly configured with required env vars.
     if ( ! hasEnvVars ) {
