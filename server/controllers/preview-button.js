@@ -24,11 +24,15 @@ module.exports = {
 
     const { contentTypes } = await getService( 'plugin' ).getConfig();
     const supportedType = contentTypes.find( type => type.uid === uid );
+    console.log(supportedType)
 
+    const { prepareFunc } = supportedType;
     // Collection types will find by the ID and single types do not.
-    const entity = id
+    const foundEntity = id
       ? await strapi.service( uid ).findOne( id )
       : await strapi.service( uid ).find();
+    // Prepare entity
+    const entity = typeof prepareFunc === "function" ? await prepareFunc(foundEntity) : foundEntity;
 
     // Raise warning if plugin is active but not properly configured with required env vars.
     if ( ! hasEnvVars ) {
